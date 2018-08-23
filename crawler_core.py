@@ -1,15 +1,42 @@
 import urllib.request as rq
+from bs4 import BeautifulSoup
 
 
-gce_guide_root_url = "https://papers.gceguide.com/IGCSE/Economics%20(0455)/0455_m15_ms_12.pdf"
+gce_guide_root_url = "https://papers.gceguide.com/IGCSE/"
 forge_agent_header = {'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:23.0) Gecko/20100101 Firefox/23.0'}
 
 
-def main():
-    i_rq = rq.Request(url=gce_guide_root_url, headers=forge_agent_header)
+def search_with_specified_url(specified_url):
+    pass
+
+
+def search_all(subject, code):
+    specified_url = gce_guide_root_url + subject + "%20(" + code + ")/"
+    i_rq = rq.Request(url=specified_url, headers=forge_agent_header)
     ret = rq.urlopen(i_rq).read()
-    with open("/Users/wuhaozhen/Downloads/test.pdf", "wb") as f:
-        f.write(ret)
+    html_phrase = BeautifulSoup(ret, 'lxml')
+
+    papers = html_phrase.select('#ggTable > tbody > tr > td > a')
+
+    all_papers = []
+    for p in papers:
+        print(papers)
+        all_papers.append(p['href'])
+
+    return all_papers
+
+
+def download_all(subject, code, to_path):
+    for url in search_all(subject, code):
+        i_rq = rq.Request(url=url, headers=forge_agent_header)
+        ret = rq.urlopen(i_rq).read()
+        with open(to_path + url[url.rfind("/")+1:], "wb") as f:
+            f.write(ret)
+
+
+def main():
+    print(search_all("Economics", "0455"))
+    download_all("Economics", "0455", "/User/wuhaozhen/Downloads/Economics/")
 
 
 if __name__ == '__main__':
