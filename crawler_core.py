@@ -40,5 +40,9 @@ def main():
     download_all("Economics", "0455", "/Users/wuhaozhen/Downloads/Economics/")
 
 
+def test():
+    pass
+    pass
+
 if __name__ == '__main__':
     main()
