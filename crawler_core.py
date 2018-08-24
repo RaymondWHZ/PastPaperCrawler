@@ -1,5 +1,10 @@
 import urllib.request as rq
 from bs4 import BeautifulSoup
+import ssl
+import re
+
+
+ssl._create_default_https_context = ssl._create_unverified_context
 
 
 gce_guide_root_url = "https://papers.gceguide.com/IGCSE/"
@@ -30,6 +35,10 @@ def download_all(subject, code, to_path):
     specified_url = __gce_guide_specified_link(subject, code)
 
     for paper in __search_with_specified_url(specified_url):
+        print(paper)
+        if not re.findall(r'\d{4}_[swy]\d{2}_\w{2}_[1234][123].pdf', paper):
+            continue
+
         i_rq = rq.Request(url=specified_url+paper, headers=forge_agent_header)
         ret = rq.urlopen(i_rq).read()
 
