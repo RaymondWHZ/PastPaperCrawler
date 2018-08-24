@@ -27,7 +27,6 @@ def __search_with_specified_url(specified_url):
 
 def search_all(subject, code):
     specified_url = __gce_guide_specified_link(subject, code)
-
     return list(__search_with_specified_url(specified_url))
 
 
@@ -35,8 +34,8 @@ def download_all(subject, code, to_path):
     specified_url = __gce_guide_specified_link(subject, code)
 
     for paper in __search_with_specified_url(specified_url):
-        print(paper)
         if not re.findall(r'\d{4}_[swy]\d{2}_\w{2}_[1234][123].pdf', paper):
+            # If the paper is not a) past paper b) answer c) Future questions, then skip it.
             continue
 
         i_rq = rq.Request(url=specified_url+paper, headers=forge_agent_header)
@@ -44,6 +43,8 @@ def download_all(subject, code, to_path):
 
         with open(to_path + paper, "wb") as f:
             f.write(ret)
+
+
 
 
 def main():
