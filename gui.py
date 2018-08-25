@@ -1,10 +1,9 @@
 from crawler_core import *
-
-from tkinter.filedialog import *
+from tkinter import *
+from tkinter.filedialog import askdirectory
 
 info = {
     'database_location': 'Please select the folder-->',
-
 }
 
 
@@ -66,10 +65,11 @@ def ui_update_papers(paper_str):
     :param paper_str: <str> String contains subject and code from listbox, e.g. Economics_0455
     :return: <None>
     """
-    code = paper_str.split('_')[1]
-    name = paper_str.split('_')[0]
 
-    all_papers = search_all(name, code)
+    subject = paper_str.split('_')[0]
+    code = paper_str.split('_')[1]
+
+    all_papers = search_all(subject, code)
 
     ps = app.children['paper_shower']
     ps.delete(0, END)   # Clear the listbox
@@ -110,4 +110,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-    
