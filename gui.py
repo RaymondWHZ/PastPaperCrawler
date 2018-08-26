@@ -21,19 +21,19 @@ class MainWindow(Tk):
 
         self.geometry('1920x1080')
 
-        # variable to keep option menu selection
-        self.subject_selection = subject_selection = StringVar(self)
+        self.__subject_selection = StringVar(self)  # variable to keep option menu selection
+        self.__shown_papers = []  # variable to keep all shown papers in listbox
 
         # Row 1
 
         # subject option menu
         OptionMenu(
-            self, subject_selection, *all_subjects_names
+            self, self.__subject_selection, *all_subjects_names
         ).grid(row=1, column=1)
 
         # search all button
         Button(
-            self, text='Search', command=self.search_button_clicked
+            self, text='Search', command=self.__search_button_clicked
         ).grid(row=1, column=2)
 
         # Row 2
@@ -44,7 +44,7 @@ class MainWindow(Tk):
         ).grid(row=3, column=1, sticky=W)
 
         Button(
-            self, text='...', name='bt_ask_db_loc', command=self.database_loc_button_clicked
+            self, text='...', name='bt_ask_db_loc', command=self.__database_loc_button_clicked
         ).grid(row=3, column=2)
 
         # Row 4
@@ -56,13 +56,13 @@ class MainWindow(Tk):
 
         Button(
             self, text='Download All', state=DISABLED, name='bt_download_all',
-            command=self.download_all_button_clicked
+            command=self.__download_all_button_clicked
         ).grid(row=5, column=2)
 
         # Row 6
         Button(
             self, text='Download Selected', state=DISABLED, name='bt_download_selected',
-            command=self.download_selected_button_clicked
+            command=self.__download_selected_button_clicked
         ).grid(row=6, column=2)
 
     def __update_database_location(self):
@@ -86,7 +86,7 @@ class MainWindow(Tk):
         all_bt = self.children['bt_download_all']
         selected_bt = self.children['bt_download_selected']
 
-        if info['database_location'] == 'Please select the folder-->':
+        if info['database_location'] == 'Please select the folder-->' or not self.__shown_papers:
             database_bt.flash()
             all_bt['state'] = DISABLED
             selected_bt['state'] = DISABLED
@@ -101,48 +101,47 @@ class MainWindow(Tk):
         :return: <None>
         """
 
-        paper_str = self.subject_selection.get()
+        paper_str = self.__subject_selection.get()
         subject = paper_str.split('_')[0]
         code = paper_str.split('_')[1]
 
-        all_papers = search_all(subject, code)
+        self.__shown_papers = search_all(subject, code)
 
         ps = self.children['paper_shower']
         ps.delete(0, END)  # Clear the listbox
 
-        for paper in all_papers:
+        for paper in self.__shown_papers:
             ps.insert(END, paper)
 
-    def search_button_clicked(self):
+    def __search_button_clicked(self):
         self.__update_paper_list()
         self.__update_buttons()
 
-    def database_loc_button_clicked(self):
+    def __database_loc_button_clicked(self):
         self.__update_database_location()
         self.__update_buttons()
 
-    def download_all_button_clicked(self):
-        paper_str = self.subject_selection.get()
+    def __download_all_button_clicked(self):
+        paper_str = self.__subject_selection.get()
         subject = paper_str.split('_')[0]
         code = paper_str.split('_')[1]
         to_path = info['database_location'] + '/'
 
-        download_papers(subject, code, to_path)
+        download_papers(subject, code, to_path, self.__shown_papers)
 
-    def download_selected_button_clicked(self):
-        paper_str = self.subject_selection.get()
-        subject = paper_str.split('_')[0]
-        code = paper_str.split('_')[1]
-        to_path = info['database_location'] + '/'
-
+    def __get_selected_papers(self):
         paper_shower = self.children['paper_shower']
         selected_indices = paper_shower.curselection()
+        for index in selected_indices:
+            yield paper_shower.get(index)
 
-        def get_specified_papers():
-            for index in selected_indices:
-                yield paper_shower.get(index)
+    def __download_selected_button_clicked(self):
+        paper_str = self.__subject_selection.get()
+        subject = paper_str.split('_')[0]
+        code = paper_str.split('_')[1]
+        to_path = info['database_location'] + '/'
 
-        download_papers(subject, code, to_path, get_specified_papers())
+        download_papers(subject, code, to_path, self.__get_selected_papers())
 
 
 def main():
